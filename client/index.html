@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>CampusGO — SRM Institute of Science and Technology, Trichy</title>
+  <meta name="description"
+    content="CampusGO is the smart campus navigation system for SRM Institute of Science and Technology, Trichy. Find university blocks, hostels, food courts, amenities and more." />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap"
+    rel="stylesheet" />
+
+  <link rel="stylesheet" href="/src/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+</head>
+
+<body>
+
+  <!-- Map Container (hidden by default) -->
+  <div id="map-container" style="display: none;">
+    <div id="map"></div>
+    <div class="ui-overlay">
+      <!-- Go Back Button -->
+      <button class="go-back-btn" id="go-back-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to Home
+      </button>
+      
+      <div class="search-container fade-in">
+        <div class="search-bar">
+          <div class="search-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 8v8m-4-4h8"></path>
+            </svg>
+            <input type="text" id="start-input" placeholder="Enter start location" />
+          </div>
+          <div class="search-divider"></div>
+          <div class="search-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <input type="text" id="end-input" placeholder="Enter destination" />
+          </div>
+        </div>
+        <div class="button-group">
+          <button id="route-btn" class="route-button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            Get Route
+          </button>
+          <button id="clear-route-btn" class="clear-route-button" style="display: none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Clear
+          </button>
+        </div>
+      </div>
+      
+      <div class="chat-widget fade-in">
+        <div class="chat-window" id="chat-window">
+          <div class="chat-header">Campus Guide AI</div>
+          <div class="chat-messages" id="chat-messages">
+            <div class="message bot">Hello! I'm here to help you navigate the campus. Ask me anything!</div>
+            <div class="quick-queries">
+              <button class="quick-query-btn" data-query="Where is the library?">📚 Library</button>
+              <button class="quick-query-btn" data-query="Hospital timings?">🏥 Hospital</button>
+              <button class="quick-query-btn" data-query="Tell me about hostels">🏠 Hostels</button>
+              <button class="quick-query-btn" data-query="Where is the canteen?">🍽️ Canteen</button>
+              <button class="quick-query-btn" data-query="Contact information">📞 Contact</button>
+              <button class="quick-query-btn" data-query="Emergency numbers">🚨 Emergency</button>
+            </div>
+          </div>
+          <div class="chat-input">
+            <input type="text" id="chat-input-field" placeholder="Ask a question..." />
+            <button id="chat-send-btn">Send</button>
+          </div>
+        </div>
+        <button class="chat-button" id="chat-toggle">💬</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Landing Page Content -->
+  <div id="landing-content">
+
+  <!-- ============ HEADER ============ -->
+  <header class="header" id="header">
+    <a href="#home" class="header__logo">
+      <img src="icons/srmlogo.png" alt="SRM Trichy Logo" />
+      <div class="header__logo-text">
+        <span class="brand">CampusGO</span>
+        <span class="sub">SRM Trichy Campus Navigator</span>
+      </div>
+    </a>
+
+    <nav class="nav" id="nav">
+      <ul class="nav__list">
+        <li><a href="#home" class="nav__link active">Home</a></li>
+        <li><a href="#events" class="nav__link">Events</a></li>
+        <li><a href="#blocks" class="nav__link">University Blocks</a></li>
+        <li><a href="#hostels" class="nav__link">Hostels</a></li>
+        <li><a href="#foodcourts" class="nav__link">Food Courts</a></li>
+        <li><a href="#amenities" class="nav__link">Amenities</a></li>
+        <li><a href="#contact" class="nav__link">Contact Details</a></li>
+      </ul>
+    </nav>
+
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </header>
+
+  <!-- Mobile Nav Backdrop -->
+  <div class="nav-backdrop" id="nav-backdrop"></div>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="home">
+    <div class="hero__bg"></div>
+    <div class="hero__overlay"></div>
+    <div class="hero__particles">
+      <span></span><span></span><span></span>
+      <span></span><span></span><span></span>
+    </div>
+    <div class="hero__content">
+      <div class="hero__badge">
+        <span class="dot"></span> SRM Institute of Science &amp; Technology — Trichy
+      </div>
+      <h1>Navigate Your Campus Like Never Before</h1>
+      <p>CampusGO is your smart companion for exploring every corner of SRM Trichy — from academic blocks and hostels to
+        food courts and amenities.</p>
+      <button id="explore-campus-btn" class="hero__cta" onclick="window.exploreCampus()" style="pointer-events: auto; position: relative; z-index: 1000;">
+        Explore Campus
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+        </svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ EVENTS ============ -->
+  <section id="events">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2>Campus Events</h2>
+        <p>Stay updated with the latest happenings across SRM Trichy campus.</p>
+      </div>
+
+      <!-- Ongoing Events -->
+      <div class="events-category reveal">
+        <h3 class="events-category__title">Ongoing Events</h3>
+        <div class="events-grid">
+          
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status ongoing">Ongoing</span>
+            </div>
+            <h4 class="event-card__title">Inter-Department Sports Week</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>March 1-7, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Sports Complex</span>
+              </div>
+            </div>
+            <p class="event-card__description">Week-long sports competition featuring cricket, football, basketball, volleyball, and athletics events across all departments with exciting prizes.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status ongoing">Ongoing</span>
+            </div>
+            <h4 class="event-card__title">Entrepreneurship Workshop Series</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>March 2-6, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Innovation Center, SRM-IST Engineering Block</span>
+              </div>
+            </div>
+            <p class="event-card__description">Five-day intensive workshop on startup fundamentals, business planning, funding strategies, and pitch presentations by successful entrepreneurs and industry experts.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status ongoing">Ongoing</span>
+            </div>
+            <h4 class="event-card__title">Annual Book Fair 2026</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>March 3-8, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Central Library Lawn</span>
+              </div>
+            </div>
+            <p class="event-card__description">Six-day book fair featuring academic books, novels, magazines, and stationery with special discounts for students and faculty members.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Upcoming Events -->
+      <div class="events-category reveal">
+        <h3 class="events-category__title">Upcoming Events</h3>
+        <div class="events-grid">
+          
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status upcoming">Tomorrow</span>
+            </div>
+            <h4 class="event-card__title">Women's Day Celebrations 2026</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>March 5, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Main Auditorium</span>
+              </div>
+            </div>
+            <p class="event-card__description">Special celebration honoring women's achievements with guest speakers, cultural performances, awards ceremony, and panel discussions on women empowerment.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status upcoming">Upcoming</span>
+            </div>
+            <h4 class="event-card__title">National Seminar on AI & Machine Learning</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>March 10-11, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>TRP Engineering Block</span>
+              </div>
+            </div>
+            <p class="event-card__description">Two-day national seminar on artificial intelligence and machine learning with research paper presentations, workshops, and keynote sessions by AI experts.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status upcoming">Upcoming</span>
+            </div>
+            <h4 class="event-card__title">Hackathon 2026 - Code Sprint</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>March 15-16, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>SRM-IST Engineering Block</span>
+              </div>
+            </div>
+            <p class="event-card__description">24-hour coding marathon with challenging problem statements, mentorship from industry professionals, and prizes worth ₹2 lakhs for winning teams.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status upcoming">Upcoming</span>
+            </div>
+            <h4 class="event-card__title">Career Fair & Placement Drive 2026</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>March 20-22, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Central Library Lawn</span>
+              </div>
+            </div>
+            <p class="event-card__description">Three-day placement drive with 60+ companies offering internships and full-time positions across engineering, medical, and management domains.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status upcoming">Upcoming</span>
+            </div>
+            <h4 class="event-card__title">Science & Innovation Exhibition 2026</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>March 25-27, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Arts and Science College</span>
+              </div>
+            </div>
+            <p class="event-card__description">Student-led science exhibition showcasing innovative research projects, working prototypes, and technological innovations across various disciplines.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status upcoming">Upcoming</span>
+            </div>
+            <h4 class="event-card__title">Medical Health Camp & Awareness Drive</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>March 28-29, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Medical College Campus</span>
+              </div>
+            </div>
+            <p class="event-card__description">Free health checkup camp with medical consultations, health awareness sessions, and preventive healthcare guidance by medical college faculty and students.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Recently Completed Events -->
+      <div class="events-category reveal">
+        <h3 class="events-category__title">Recently Completed Events</h3>
+        <div class="events-grid">
+          
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status completed">Completed</span>
+            </div>
+            <h4 class="event-card__title">Annual Tech Symposium 2026</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>February 15-16, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Main Auditorium</span>
+              </div>
+            </div>
+            <p class="event-card__description">Two-day technical symposium featuring workshops on emerging technologies, paper presentations, project exhibitions, and keynote speeches from industry leaders.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status completed">Completed</span>
+            </div>
+            <h4 class="event-card__title">Cultural Fest - Vibrance 2026</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>February 20-22, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Open Air Theatre</span>
+              </div>
+            </div>
+            <p class="event-card__description">Three-day cultural extravaganza with music competitions, dance performances, drama, fashion shows, and celebrity guest appearances with over 2000 participants.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status completed">Completed</span>
+            </div>
+            <h4 class="event-card__title">International Medical Research Conference</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>February 25-26, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Medical College Seminar Hall</span>
+              </div>
+            </div>
+            <p class="event-card__description">International conference on recent advances in medical research with presentations from renowned doctors, researchers, and healthcare professionals worldwide.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+          <div class="event-card">
+            <div class="event-card__header">
+              <span class="event-card__status completed">Completed</span>
+            </div>
+            <h4 class="event-card__title">Nursing Skills Workshop 2026</h4>
+            <div class="event-card__meta">
+              <div class="event-card__meta-item">
+                <span class="icon">📅</span>
+                <span>February 28, 2026</span>
+              </div>
+              <div class="event-card__meta-item">
+                <span class="icon">📍</span>
+                <span>Nursing College</span>
+              </div>
+            </div>
+            <p class="event-card__description">Hands-on workshop for nursing students covering advanced patient care techniques, emergency response protocols, and modern healthcare practices.</p>
+            <button class="event-card__btn">View Details</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ UNIVERSITY BLOCKS ============ -->
+  <section id="blocks">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2>University Blocks</h2>
+        <p>Explore the key academic and administrative buildings across the SRM Trichy campus.</p>
+      </div>
+      <div class="card-grid">
+
+        <div class="card reveal">
+          <div class="card__icon">
+            <img src="https://images.shiksha.com/mediadata/images/1680003008phppd7550_270x200.jpg"/>
+          </div>
+          <h3>SRM-IST Engineering Block</h3>
+          <p>Premier engineering campus featuring cutting-edge laboratories, smart classrooms, and innovation centers for Computer Science, Electronics, Mechanical, and Civil Engineering programs.</p>
+          
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon"><img src="icons/medical collge.jpeg" alt="Medical College" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);" /></div>
+          <h3>Medical College</h3>
+          <p>World-class medical education facility with modern anatomy labs, simulation centers, clinical training units, and a teaching hospital for comprehensive healthcare education.</p>
+          
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon">
+            <img src="data:image/jpeg;base64,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"/>
+          </div>
+          <h3>TRP Engineering</h3>
+          <p>Specialized engineering block with advanced robotics labs, IoT research facilities, and project development centers fostering innovation and hands-on technical learning.</p>
+          
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon">
+            <img src="https://s3.ap-south-1.amazonaws.com/townscript-production/images/011899ab-77f0-49c7-8c5b-c4c7c9122a8a.jpg"/>
+          </div>
+          <h3>Arts and Science College</h3>
+          <p>Vibrant academic hub offering diverse programs in humanities, social sciences, mathematics, and pure sciences with well-equipped labs and interactive learning spaces.</p>
+          
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon">
+            <img src="data:image/jpeg;base64,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"/>
+          </div>
+          <h3>Nursing College</h3>
+          <p>Comprehensive nursing education center with clinical skill labs, patient care simulation rooms, and practical training facilities preparing future healthcare professionals.</p>
+          
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon"><img src="icons/central library.jpeg" alt="Central Library" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);" /></div>
+          <h3>Central Library</h3>
+          <p>Expansive knowledge center with over 100,000 books, digital resources, e-journals, quiet study zones, and collaborative spaces equipped with high-speed internet access.</p>
+          
+        </div>
+
+      
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOSTELS ============ -->
+  <section id="hostels">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2>Hostels</h2>
+        <p>Comfortable and secure residential facilities for students on campus.</p>
+      </div>
+      <div class="card-grid">
+
+        <div class="card reveal">
+          <div class="card__icon"><img src="https://trp.srmtrichy.edu.in/wp-content/uploads/2024/05/Boys-Hostel-300x300.png" alt="Girls Hostel" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);" /></div>
+          <h3>Girls Hostel (G-Block)</h3>
+          <p>Three-storey hostel with spacious twin-sharing rooms, common study area, and 24/7 Wi-Fi connectivity.</p>
+          <span class="card__tag">Women</span>
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon"><img src="icons/medical girls hostel.jpeg" alt="Medical Girls Hostel" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);" /></div>
+          <h3>Medical Girls Hostel</h3>
+          <p>Modern hostel facility with attached bathrooms, laundry services, and recreational room for residents.</p>
+          <span class="card__tag">Women</span>
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon"><img src="icons/boys hostel.jpeg" alt="Boys Hostel" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);" /></div>
+          <h3>Boys Hostel (S-Block)</h3>
+          <p>Secure residential block with CCTV surveillance, in-house mess, and dedicated warden quarters.</p>
+          <span class="card__tag">Men</span>
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon"><img src="icons/nilgiris.jpeg" alt="Nilgiris Hostel" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);" /></div>
+          <h3>Nilgiris Hostel</h3>
+          <p>Premium accommodation with AC rooms, hot water facility, and a well-maintained garden area.</p>
+          <span class="card__tag">Men</span>
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon">
+            <img src="https://www.sikshapedia.com/public/data/colleges/trichy-srm-medical-college-hospital-and-research-centre-trichy-tamil-nadu/5oY9OR1spW.webp"/>
+          </div>
+          <h3>Faculty Quarters</h3>
+          <p>Comfortable residential complex for faculty members with modern amenities, parking facilities, and peaceful environment for academic staff.</p>
+          <span class="card__tag">Faculty</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOD COURTS ============ -->
+  <section id="foodcourts">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2>Food Courts</h2>
+        <p>Delicious and diverse dining options spread across the campus.</p>
+      </div>
+      <div class="card-grid">
+
+        <div class="card reveal">
+          <div class="card__icon"><img src="icons/basil.jpeg" alt="Basil" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);" /></div>
+          <h3>Basil</h3>
+          <p>The central dining hall offering a variety of South Indian, North Indian, and continental meals at
+            affordable prices.</p>
+          <span class="card__tag">Veg &amp; Non-Veg</span>
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon"><img src="icons/kaapi.jpeg" alt="Kaapi 2.0" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);" /></div>
+          <h3>Kaapi 2.0</h3>
+          <p>A cozy café serving freshly brewed coffee, tea, juices, and light snacks — the perfect study break spot.
+          </p>
+          <span class="card__tag">Beverages</span>
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon"><img src="icons/mrburger.jpeg" alt="Mr.Burger" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);" /></div>
+          <h3>Mr.Burger</h3>
+          <p>Quick bites including pizza, burgers, sandwiches, and chaat — ideal for between-class hunger pangs.</p>
+          <span class="card__tag">Quick Bites</span>
+        </div>
+
+        <div class="card reveal">
+          <div class="card__icon"><img src="icons/trp canteen.jpeg" alt="TRP Canteen" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md);" /></div>
+          <h3>TRP Canteen</h3>
+          <p>Fresh fruit juices, smoothies, salads, and healthy snack bowls for the health-conscious crowd.</p>
+          <span class="card__tag">Healthy</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ AMENITIES ============ -->
+  <section id="amenities">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2>Amenities</h2>
+        <p>Everything you need, right on campus.</p>
+      </div>
+      <div class="amenity-grid">
+        <div class="amenity-card reveal"><span class="icon"><img src="icons/medical hospital.jpeg" alt="Medical Centre" /></span>
+          <h4>Medical Centre</h4>
+        </div>
+        <div class="amenity-card reveal"><span class="icon"><img src="icons/sportsground.jpeg" alt="Sports Complex" /></span>
+          <h4>Sports Complex</h4>
+        </div>
+        <div class="amenity-card reveal"><span class="icon"><img src="icons/ATM.jpeg" alt="ATM" /></span>
+          <h4>ATM</h4>
+        </div>
+        <div class="amenity-card reveal"><span class="icon"><img src="icons/Parking.jpeg" alt="Parking" /></span>
+          <h4>Parking</h4>
+        </div>
+        <div class="amenity-card reveal"><span class="icon"><img src="icons/bustop.jpeg" alt="Bus Stop" /></span>
+          <h4>Bus Stop</h4>
+        </div>
+        <div class="amenity-card reveal"><span class="icon">🏋️</span>
+          <h4>Gym</h4>
+        </div>
+        <div class="amenity-card reveal"><span class="icon"><img src="icons/auditorium.jpeg" alt="Auditorium" /></span>
+          <h4>Auditorium</h4>
+        </div>
+        <div class="amenity-card reveal"><span class="icon">🖨️</span>
+          <h4>Print & Copy</h4>
+        </div>
+        <div class="amenity-card reveal"><span class="icon">🛒</span>
+          <h4>General Store</h4>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONTACT ============ -->
+  <section id="contact">
+    <div class="container">
+      <div class="section-header reveal">
+        <h2>Contact Details</h2>
+        <p>Get in touch with us for any queries about campus navigation.</p>
+      </div>
+      <div class="contact-wrapper reveal">
+
+        <div class="contact-info">
+          <div class="contact-item">
+            <div class="icon-box">📍</div>
+            <div>
+              <h4>Address</h4>
+              <p>SRM Institute of Science &amp; Technology<br />Tiruchirappalli — Chennai Highway,<br />Irungalur,
+                Trichy — 621105, Tamil Nadu</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="icon-box">📞</div>
+            <div>
+              <h4>Phone</h4>
+              <p>+91 431 225 8000</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="icon-box">✉️</div>
+            <div>
+              <h4>Email</h4>
+              <p>info@srmtrichy.edu.in</p>
+            </div>
+          </div>
+          <div class="contact-item">
+            <div class="icon-box">🕐</div>
+            <div>
+              <h4>Office Hours</h4>
+              <p>Mon – Sat: 9:00 AM – 5:00 PM</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <div class="footer__left">
+          <p class="footer__copy">&copy; 2026 <span>CampusGO</span> — SRM Institute of Science &amp; Technology, Trichy</p>
+          <p class="footer__developers">Developed by <span>Pujari Saisree</span> &amp; <span>Lathif Ahmad</span></p>
+        </div>
+        <div class="footer__socials">
+          <a href="https://www.facebook.com/srmist.trichy/" target="_blank" rel="noopener noreferrer"
+            aria-label="Facebook">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
+            </svg>
+          </a>
+          <a href="https://x.com/srmist_trichy?lang=en" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+          </a>
+          <a href="https://www.instagram.com/srmist.trichy/?hl=en" target="_blank" rel="noopener noreferrer"
+            aria-label="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+            </svg>
+          </a>
+          <a href="https://in.linkedin.com/company/srm-institute-of-science-and-technology-tiruchirappalli"
+            target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Landing Page Chatbot Widget -->
+  <div class="chat-widget-landing fade-in">
+    <div class="chat-window-landing" id="chat-window-landing">
+      <div class="chat-header">Campus Guide AI</div>
+      <div class="chat-messages" id="chat-messages-landing">
+        <div class="message bot">Hello! I'm here to help you navigate the campus. Ask me anything!</div>
+        <div class="quick-queries">
+          <button class="quick-query-btn" data-query="Where is the library?">📚 Library</button>
+          <button class="quick-query-btn" data-query="Hospital timings?">🏥 Hospital</button>
+          <button class="quick-query-btn" data-query="Tell me about hostels">🏠 Hostels</button>
+          <button class="quick-query-btn" data-query="Where is the canteen?">🍽️ Canteen</button>
+          <button class="quick-query-btn" data-query="Contact information">📞 Contact</button>
+          <button class="quick-query-btn" data-query="Emergency numbers">🚨 Emergency</button>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="chat-input-field-landing" placeholder="Ask a question..." />
+        <button id="chat-send-btn-landing">Send</button>
+      </div>
+    </div>
+    <button class="chat-button" id="chat-toggle-landing">💬</button>
+  </div>
+
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>

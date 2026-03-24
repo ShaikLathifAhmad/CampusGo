@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Attribution: Univeristy icons created by nawicon - Flaticon -->
+  <defs>
+    <style>
+      .building { fill: #2c3e50; }
+      .roof { fill: #e74c3c; }
+      .window { fill: #ecf0f1; }
+      .door { fill: #34495e; }
+    </style>
+  </defs>
+  
+  <!-- Main building -->
+  <rect class="building" x="6" y="14" width="20" height="16" rx="0.5"/>
+  
+  <!-- Roof -->
+  <polygon class="roof" points="16,6 4,14 28,14"/>
+  
+  <!-- Tower/Spire -->
+  <rect class="building" x="14" y="2" width="4" height="6"/>
+  <polygon class="roof" points="16,0 13,2 19,2"/>
+  
+  <!-- Door -->
+  <rect class="door" x="13" y="22" width="6" height="8"/>
+  
+  <!-- Windows -->
+  <rect class="window" x="8" y="16" width="3" height="3"/>
+  <rect class="window" x="21" y="16" width="3" height="3"/>
+  <rect class="window" x="8" y="20" width="3" height="3"/>
+  <rect class="window" x="21" y="20" width="3" height="3"/>
+  
+  <!-- Columns -->
+  <rect class="window" x="11" y="22" width="1" height="8"/>
+  <rect class="window" x="20" y="22" width="1" height="8"/>
+</svg>
