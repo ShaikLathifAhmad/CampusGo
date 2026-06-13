@@ -100,9 +100,6 @@ cd ai_service
 python wsgi.py
 ```
 
-## 🌐 Deployment
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions for various platforms.
 
 ## 🔧 Configuration
 
@@ -112,11 +109,6 @@ Each service requires environment variables. Copy `.env.example` to `.env` in ea
 - **Server**: Port, AI service URL, security keys, CORS settings
 - **AI Service**: Port, Flask settings, logging configuration
 
-## 📚 API Documentation
-
-- Server API runs on port 3000 (configurable)
-- AI Service API runs on port 5000 (configurable)
-- See `/docs/API.md` for endpoint details
 
 ## 🔒 Security Features
 
@@ -125,34 +117,6 @@ Each service requires environment variables. Copy `.env.example` to `.env` in ea
 - Helmet security headers
 - Request logging and monitoring
 - Anti-scraping measures
-
-## 🧪 Testing
-
-```bash
-# Client tests
-cd client
-npm test
-
-# Server tests
-cd server
-npm test
-
-# AI Service tests
-cd ai_service
-python -m pytest
-```
-
-## 📄 License
-
-[Your License Here]
-
-## 👥 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
 
 ## 📞 Support
 
