@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+*/node_modules/
+client/node_modules/
+server/node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+ai_service/__pycache__/
+ai_service/.venv/
+.venv/
+venv/
+ENV/
+env/
+
+# Logs
+*.log
+logs/
+*.log.*
+server/logs/
+ai_service/logs/
+client/logs/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+server/.env
+ai_service/.env
+client/.env
+
+# Build outputs
+dist/
+build/
+client/dist/
+client/build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# SSL Certificates (if any)
+*.pem
+*.key
+*.crt
+
+# Package manager locks (optional - uncomment if not deploying exact versions)
+# package-lock.json
+# yarn.lock
+
+# Testing
+coverage/
+.nyc_output/
+
+# Vite
+.vite/
+client/.vite/
