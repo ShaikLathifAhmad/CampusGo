@@ -1,9 +1,5 @@
-// Simple Campus Routing System
-// This creates a graph of campus locations and finds paths between them
-
 class CampusRouter {
     constructor() {
-        // Define campus graph with connections between locations
         this.graph = {
             'Main Gate': {
                 connections: ['Srm hospital', 'Auditorium', 'Medical college library'],
@@ -75,11 +71,11 @@ class CampusRouter {
             },
             'Staff quaters 2': {
                 connections: ['Staff quarters', 'S Block Hostel'],
-                coords: { lat: 10.95668, lng: 78.7511 }
+                coords: { lat: 10.95668, lng: 78.75110 }
             },
             'Play ground': {
                 connections: ['Staff quarters', 'SRM IST'],
-                coords: { lat: 10.9558, lng: 78.75271 }
+                coords: { lat: 10.95580, lng: 78.75271 }
             },
             'Home needs': {
                 connections: ['SRM IST', 'Auditorium', 'Basil Restaurant'],
@@ -88,31 +84,21 @@ class CampusRouter {
         };
     }
 
-    // Calculate distance between two coordinates (in meters)
+    // Haversine formula — distance in meters between two coords
     calculateDistance(lat1, lng1, lat2, lng2) {
-        const R = 6371e3; // Earth's radius in meters
+        const R = 6371e3;
         const φ1 = lat1 * Math.PI / 180;
         const φ2 = lat2 * Math.PI / 180;
         const Δφ = (lat2 - lat1) * Math.PI / 180;
         const Δλ = (lng2 - lng1) * Math.PI / 180;
-
-        const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                  Math.cos(φ1) * Math.cos(φ2) *
-                  Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-        return R * c; // Distance in meters
+        const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    // Find shortest path using BFS (Breadth-First Search)
+    // BFS shortest path — returns array of location names or null
     findPath(startName, endName) {
-        if (!this.graph[startName] || !this.graph[endName]) {
-            return null;
-        }
-
-        if (startName === endName) {
-            return [startName];
-        }
+        if (!this.graph[startName] || !this.graph[endName]) return null;
+        if (startName === endName) return [startName];
 
         const queue = [[startName]];
         const visited = new Set([startName]);
@@ -121,12 +107,9 @@ class CampusRouter {
             const path = queue.shift();
             const node = path[path.length - 1];
 
-            if (node === endName) {
-                return path;
-            }
+            if (node === endName) return path;
 
-            const connections = this.graph[node].connections || [];
-            for (const neighbor of connections) {
+            for (const neighbor of (this.graph[node].connections || [])) {
                 if (!visited.has(neighbor)) {
                     visited.add(neighbor);
                     queue.push([...path, neighbor]);
@@ -134,39 +117,55 @@ class CampusRouter {
             }
         }
 
-        return null; // No path found
+        return null;
     }
 
-    // Get route with coordinates
+    // Returns full route with coords, distance, and walking time
     getRoute(startName, endName) {
         const path = this.findPath(startName, endName);
-        
-        if (!path) {
-            return null;
-        }
+        if (!path) return null;
 
         const coordinates = path.map(name => this.graph[name].coords);
-        
-        // Calculate total distance
+
         let totalDistance = 0;
         for (let i = 0; i < coordinates.length - 1; i++) {
-            const dist = this.calculateDistance(
+            totalDistance += this.calculateDistance(
                 coordinates[i].lat, coordinates[i].lng,
                 coordinates[i + 1].lat, coordinates[i + 1].lng
             );
-            totalDistance += dist;
         }
 
-        // Estimate walking time (average walking speed: 1.4 m/s or 5 km/h)
-        const walkingTime = Math.ceil(totalDistance / 1.4 / 60); // in minutes
-
         return {
-            path: path,
-            coordinates: coordinates,
-            distance: Math.round(totalDistance),
-            walkingTime: walkingTime
+            path,
+            coordinates,
+            distance: Math.round(totalDistance),          // meters
+            walkingTime: Math.ceil(totalDistance / 1.4 / 60) // minutes at 1.4 m/s
         };
+    }
+
+    // Returns all location names and their coordinates
+    getAllLocations() {
+        return Object.entries(this.graph).map(([name, data]) => ({
+            name,
+            lat: data.coords.lat,
+            lng: data.coords.lng,
+            connections: data.connections
+        }));
+    }
+
+    // Case-insensitive partial name match — returns the exact graph key or null
+    fuzzyMatch(query) {
+        if (!query) return null;
+        const q = query.toLowerCase().trim();
+
+        // Exact match first
+        const exact = Object.keys(this.graph).find(k => k.toLowerCase() === q);
+        if (exact) return exact;
+
+        // Partial match
+        const partial = Object.keys(this.graph).find(k => k.toLowerCase().includes(q));
+        return partial || null;
     }
 }
 
-export default CampusRouter;
+module.exports = new CampusRouter();
