@@ -1,123 +1,170 @@
-# Smart Campus Navigation System
+# CampusGo — SRM Trichy Campus Navigation
 
-A comprehensive campus navigation system with AI-powered routing, featuring a React client, Node.js server, and Python AI service.
+A full-stack campus navigation web app for SRM Institute of Science and Technology, Trichy. Features interactive satellite map navigation, BFS graph-based route finding, an AI-powered campus chatbot, and JWT authentication.
 
-## 🏗️ Project Structure
+## Features
+
+- **Interactive Map** — Satellite tile map (Esri) via React-Leaflet with all campus locations marked
+- **Route Finding** — BFS graph-based routing between campus locations with walking time and distance estimates
+- **Campus Chatbot** — Pattern-matching AI assistant for campus info (timings, contacts, directions)
+- **Auth** — JWT-based login/register with bcrypt password hashing
+- **Responsive Design** — Desktop split-panel layout (sidebar + map) and mobile bottom-sheet layout
+- **Bot Protection** — CAPTCHA middleware, rate limiting, and anti-scraping measures
+
+## Tech Stack
+
+| Layer | Tech |
+|---|---|
+| Frontend | React 18, Vite, Tailwind CSS, Redux Toolkit (RTK Query) |
+| Map | React-Leaflet, Leaflet.js, Esri satellite tiles |
+| Backend | Node.js, Express |
+| Database | MongoDB + Mongoose |
+| Auth | JWT + bcryptjs |
+| Routing | Custom BFS graph (`campusRouter.js`) |
+| Logging | Winston + daily-rotate-file |
+
+## Project Structure
 
 ```
-.
-├── client/           # Frontend application (Vite + Leaflet)
-├── server/           # Backend API (Node.js + Express)
-├── ai_service/       # AI routing service (Python + Flask)
-└── docs/            # Documentation
+CampusGo/
+├── client/                   # React frontend (Vite)
+│   └── src/
+│       ├── components/
+│       │   ├── map/
+│       │   │   ├── CampusMap.jsx     # Leaflet map, markers, route polyline
+│       │   │   ├── SearchBar.jsx     # Location search + route UI
+│       │   │   └── ChatBot.jsx       # Floating campus AI chatbot
+│       │   ├── layout/               # Navbar, Footer
+│       │   ├── sections/             # Landing page sections
+│       │   └── ui/                   # Shared UI components
+│       ├── pages/
+│       │   ├── MapPage.jsx           # /map — main navigation page
+│       │   ├── Home.jsx              # Landing page
+│       │   ├── LoginPage.jsx
+│       │   └── RegisterPage.jsx
+│       ├── redux/
+│       │   ├── api/campusApi.js      # RTK Query API slice
+│       │   └── slices/
+│       │       ├── mapSlice.js       # Route + selected locations state
+│       │       ├── chatSlice.js      # Chatbot messages + highlight state
+│       │       └── authSlice.js      # Auth token + user state
+│       └── index.css                 # Design tokens + Leaflet overrides
+│
+└── server/                   # Node.js + Express backend
+    └── src/
+        ├── routes/
+        │   ├── campusRoutes.js       # /api/campus — locations + routing
+        │   ├── chatRoutes.js         # /api/chat — chatbot endpoint
+        │   ├── authRoutes.js         # /api/auth — login/register
+        │   └── locationRoutes.js
+        ├── services/
+        │   ├── campusRouter.js       # BFS graph routing algorithm
+        │   ├── chatKnowledge.js      # Pattern-matching chatbot knowledge base
+        │   └── openRouteService.js
+        ├── middleware/
+        │   ├── authMiddleware.js     # JWT verification
+        │   ├── rateLimiter.js        # Request rate limiting
+        │   ├── captchaMiddleware.js  # Bot detection
+        │   └── antiScraping.js
+        ├── controllers/
+        ├── model/
+        └── db/
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
-- Node.js 16+ and npm
-- Python 3.8+
-- Git
+- Node.js 18+
+- MongoDB (local or Atlas connection string)
 
-### Installation
+### 1. Clone
 
-1. **Clone the repository**
-   ```bash
-   git clone <your-repo-url>
-   cd smart-campus-navigation
-   ```
-
-2. **Set up the Client**
-   ```bash
-   cd client
-   npm install
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-3. **Set up the Server**
-   ```bash
-   cd ../server
-   npm install
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-4. **Set up the AI Service**
-   ```bash
-   cd ../ai_service
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   pip install -r requirements.txt
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
-
-### Development
-
-Run all services in separate terminals:
-
-**Terminal 1 - AI Service:**
 ```bash
-cd ai_service
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-python app.py
+git clone <repo-url>
+cd CampusGo
 ```
 
-**Terminal 2 - Server:**
+### 2. Server setup
+
 ```bash
 cd server
-npm run dev
+npm install
 ```
 
-**Terminal 3 - Client:**
+Create `server/.env`:
+```env
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/campusgo
+JWT_SECRET=your_jwt_secret_here
+CLIENT_URL=http://localhost:5173
+```
+
+### 3. Client setup
+
 ```bash
 cd client
-npm run dev
+npm install
 ```
 
-Access the application at `http://localhost:5173`
+Create `client/.env`:
+```env
+VITE_API_URL=http://localhost:5000
+```
 
-## 📦 Production Build
+### 4. Run (two terminals)
 
-### Client
 ```bash
-cd client
-npm run build
-# Output will be in client/dist/
+# Terminal 1 — Server
+cd server && npm run dev
+
+# Terminal 2 — Client
+cd client && npm run dev
 ```
 
-### Server
+App runs at `http://localhost:5173`
+
+## Production Build
+
 ```bash
-cd server
-npm start
+# Client (outputs to client/dist/)
+cd client && npm run build
+
+# Server
+cd server && npm start
 ```
 
-### AI Service
-```bash
-cd ai_service
-python wsgi.py
-```
+The client is deployable as a static site (Vercel, Netlify). The server can be deployed to Railway or any Node.js host.
 
+## Environment Variables
 
-## 🔧 Configuration
+| Variable | Service | Description |
+|---|---|---|
+| `PORT` | Server | Port to listen on (default 5000) |
+| `MONGODB_URI` | Server | MongoDB connection string |
+| `JWT_SECRET` | Server | Secret key for signing JWT tokens |
+| `CLIENT_URL` | Server | Frontend origin for CORS |
+| `VITE_API_URL` | Client | Backend API base URL |
 
-Each service requires environment variables. Copy `.env.example` to `.env` in each directory and configure:
+## API Endpoints
 
-- **Client**: API endpoints, feature flags
-- **Server**: Port, AI service URL, security keys, CORS settings
-- **AI Service**: Port, Flask settings, logging configuration
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/auth/register` | Register new user |
+| `POST` | `/api/auth/login` | Login, returns JWT |
+| `GET` | `/api/campus/locations` | All campus locations |
+| `POST` | `/api/campus/route` | Find route between two locations |
+| `POST` | `/api/chat` | Send message to campus chatbot |
 
+## How Routing Works
 
-## 🔒 Security Features
+The server stores campus locations as a graph where each node has a `connections` array of neighboring locations. When a route request arrives, `campusRouter.js` runs BFS from start to destination, returns the ordered path, walking time (avg 80m/min), and total distance.
 
-- Rate limiting and abuse protection
-- CORS configuration
-- Helmet security headers
-- Request logging and monitoring
-- Anti-scraping measures
+## Security
 
-## 📞 Support
-
-For issues and questions, please open an issue on GitHub.
+- Helmet headers on all responses
+- Rate limiting per IP (express-rate-limit)
+- CAPTCHA middleware for bot detection
+- Anti-scraping request fingerprinting
+- JWT expiry + bcrypt password hashing
+- CORS restricted to configured client origin
