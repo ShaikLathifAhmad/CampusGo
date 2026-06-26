@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Polyline, ZoomControl, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { useSelector } from 'react-redux'
 
@@ -34,7 +34,11 @@ function FitRoute({ route }) {
   useEffect(() => {
     if (route?.coordinates?.length > 1) {
       const bounds = L.latLngBounds(route.coordinates.map((c) => [c.lat, c.lng]))
-      map.fitBounds(bounds, { padding: [80, 80] })
+      const isMobile = window.innerWidth < 768
+      map.fitBounds(bounds, {
+        paddingTopLeft:     [isMobile ? 20 : 20, isMobile ? 70 : 20],
+        paddingBottomRight: [isMobile ? 30 : 20, isMobile ? 210 : 20],
+      })
     }
   }, [route, map])
   return null
@@ -55,11 +59,13 @@ export default function CampusMap({ locations = [] }) {
     <MapContainer
       center={center}
       zoom={16}
-      minZoom={15}
+      minZoom={14}
       maxBounds={bounds}
-      maxBoundsViscosity={1}
+      maxBoundsViscosity={0.8}
+      zoomControl={false}
       style={{ width: '100%', height: '100%' }}
     >
+      <ZoomControl position="topright" />
       <TileLayer
         url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
         attribution="Tiles © Esri"

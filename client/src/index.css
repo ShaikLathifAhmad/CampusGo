@@ -229,6 +229,8 @@ section:nth-of-type(even) {
   width: 100%;
   height: 100%;
   z-index: 0;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ─── Premium Popup ──────────────────────────────────────────── */
@@ -342,13 +344,17 @@ section:nth-of-type(even) {
 @media (max-width: 768px) {
   .leaflet-control-attribution { font-size: 6px !important; padding: 1px 3px !important; max-width: 120px !important; }
   .leaflet-control-attribution a { font-size: 6px !important; }
-  .leaflet-control-zoom { margin-left: 8px !important; margin-bottom: 8px !important; }
-  .leaflet-control-zoom a { width: 28px !important; height: 28px !important; line-height: 28px !important; font-size: 16px !important; }
+
+  /* Push zoom controls below the mobile top bar (~52px) */
+  .leaflet-top.leaflet-right { top: 58px !important; }
+  .leaflet-control-zoom { margin-right: 10px !important; margin-top: 0 !important; }
+  .leaflet-control-zoom a { width: 32px !important; height: 32px !important; line-height: 32px !important; font-size: 18px !important; }
 }
 
 @media (max-width: 480px) {
-  .leaflet-control-zoom { margin-left: 6px !important; margin-bottom: 80px !important; }
-  .leaflet-control-zoom a { width: 26px !important; height: 26px !important; line-height: 26px !important; font-size: 15px !important; }
+  .leaflet-top.leaflet-right { top: 60px !important; }
+  .leaflet-control-zoom { margin-right: 8px !important; }
+  .leaflet-control-zoom a { width: 30px !important; height: 30px !important; line-height: 30px !important; font-size: 16px !important; }
 }
 
 @media (max-width: 320px) {

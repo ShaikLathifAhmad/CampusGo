@@ -50,11 +50,11 @@ export default function ChatBot() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-[175px] md:bottom-6 right-4 md:right-6 z-50 flex flex-col items-end gap-3">
       {/* Chat window */}
       {isOpen && (
-        <div className="w-80 sm:w-96 bg-surface rounded-xl2 shadow-nav border border-border flex flex-col overflow-hidden"
-             style={{ height: '480px' }}>
+        <div className="w-[calc(100vw-2rem)] sm:w-80 md:w-96 bg-[#161b22] rounded-2xl shadow-nav border border-border flex flex-col overflow-hidden"
+             style={{ height: 'min(480px, calc(100vh - 340px))' }}>
           {/* Header */}
           <div className="bg-primary text-white px-4 py-3 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-2">
@@ -94,7 +94,7 @@ export default function ChatBot() {
                   <button
                     key={q.query}
                     onClick={() => handleSend(q.query)}
-                    className="text-xs bg-surface-2 border border-border text-text-secondary hover:text-secondary hover:border-secondary rounded-full px-3 py-1.5 transition-colors"
+                    className="text-xs bg-[#0d1117] border border-border text-text-secondary hover:text-secondary hover:border-secondary rounded-full px-3 py-1.5 transition-colors"
                   >
                     {q.label}
                   </button>
@@ -111,7 +111,7 @@ export default function ChatBot() {
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Ask a question..."
               maxLength={500}
-              className="flex-1 text-sm bg-surface-2 border border-border rounded-xl px-3 py-2 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-secondary/50"
+              className="flex-1 text-sm bg-[#0d1117] border border-border rounded-xl px-3 py-2 text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-secondary/50"
             />
             <button
               onClick={() => handleSend()}
