@@ -168,3 +168,6 @@ The server stores campus locations as a graph where each node has a `connections
 - Anti-scraping request fingerprinting
 - JWT expiry + bcrypt password hashing
 - CORS restricted to configured client origin
+
+
+Project Built by Pujari Saisree & Lathif Ahmad
